@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="referrer" content="none">
+    <title>MDEdit</title>
+    <link  id="ace_editor.css" href="css/index.css">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/element-ui/2.15.0/theme-chalk/index.min.css"/>
+    <style id="ace-tomorrow-night-eighties">.ace-tomorrow-night-eighties .ace_gutter {background: #272727;color: #CCC}.ace-tomorrow-night-eighties .ace_print-margin {width: 1px;background: #272727}.ace-tomorrow-night-eighties {background-color: #2D2D2D;color: #CCCCCC}.ace-tomorrow-night-eighties .ace_constant.ace_other,.ace-tomorrow-night-eighties .ace_cursor {color: #CCCCCC}.ace-tomorrow-night-eighties .ace_marker-layer .ace_selection {background: #515151}.ace-tomorrow-night-eighties.ace_multiselect .ace_selection.ace_start {box-shadow: 0 0 3px 0px #2D2D2D;}.ace-tomorrow-night-eighties .ace_marker-layer .ace_step {background: rgb(102, 82, 0)}.ace-tomorrow-night-eighties .ace_marker-layer .ace_bracket {margin: -1px 0 0 -1px;border: 1px solid #6A6A6A}.ace-tomorrow-night-bright .ace_stack {background: rgb(66, 90, 44)}.ace-tomorrow-night-eighties .ace_marker-layer .ace_active-line {background: #393939}.ace-tomorrow-night-eighties .ace_gutter-active-line {background-color: #393939}.ace-tomorrow-night-eighties .ace_marker-layer .ace_selected-word {border: 1px solid #515151}.ace-tomorrow-night-eighties .ace_invisible {color: #6A6A6A}.ace-tomorrow-night-eighties .ace_keyword,.ace-tomorrow-night-eighties .ace_meta,.ace-tomorrow-night-eighties .ace_storage,.ace-tomorrow-night-eighties .ace_storage.ace_type,.ace-tomorrow-night-eighties .ace_support.ace_type {color: #CC99CC}.ace-tomorrow-night-eighties .ace_keyword.ace_operator {color: #66CCCC}.ace-tomorrow-night-eighties .ace_constant.ace_character,.ace-tomorrow-night-eighties .ace_constant.ace_language,.ace-tomorrow-night-eighties .ace_constant.ace_numeric,.ace-tomorrow-night-eighties .ace_keyword.ace_other.ace_unit,.ace-tomorrow-night-eighties .ace_support.ace_constant,.ace-tomorrow-night-eighties .ace_variable.ace_parameter {color: #F99157}.ace-tomorrow-night-eighties .ace_invalid {color: #CDCDCD;background-color: #F2777A}.ace-tomorrow-night-eighties .ace_invalid.ace_deprecated {color: #CDCDCD;background-color: #CC99CC}.ace-tomorrow-night-eighties .ace_fold {background-color: #6699CC;border-color: #CCCCCC}.ace-tomorrow-night-eighties .ace_entity.ace_name.ace_function,.ace-tomorrow-night-eighties .ace_support.ace_function,.ace-tomorrow-night-eighties .ace_variable {color: #6699CC}.ace-tomorrow-night-eighties .ace_support.ace_class,.ace-tomorrow-night-eighties .ace_support.ace_type {color: #FFCC66}.ace-tomorrow-night-eighties .ace_heading,.ace-tomorrow-night-eighties .ace_markup.ace_heading,.ace-tomorrow-night-eighties .ace_string {color: #99CC99}.ace-tomorrow-night-eighties .ace_comment {color: #999999}.ace-tomorrow-night-eighties .ace_entity.ace_name.ace_tag,.ace-tomorrow-night-eighties .ace_entity.ace_other.ace_attribute-name,.ace-tomorrow-night-eighties .ace_meta.ace_tag,.ace-tomorrow-night-eighties .ace_variable {color: #F2777A}.ace-tomorrow-night-eighties .ace_indent-guide {background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAEklEQVQImWPQ09NrYAgMjP4PAAtGAwchHMyAAAAAAElFTkSuQmCC) right repeat-y}</style>
+    <style>
+      .ic{
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        background-size: contain;
+        margin-left: 6px;
+        margin-right: 6px;
+      }
+      .tb{
+        margin-top: 6px;
+        font-size: 0;
+        float: right;
+        margin-right: 20px;
+      }
+      #save{
+        background-image: url(images/save.svg);
+      }
+      #save:hover{
+        background-image: url(images/save_h.svg);
+      }
+      #add{
+        background-image: url(images/add.svg);
+      }
+      #add:hover{
+        background-image: url(images/add_h.svg);
+      }
+    </style>
+  </head>
+  <body data-mode="edit">
+  <div id="app">
+    <!-- Vue -->
+      <el-dialog
+      title="提示"
+      :visible.sync="dialogVisible"
+      width="30%"
+      >
+      <span>这是一段信息</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+    <!-- end -->
+    <div class="ui-layout-north">
+      <span id="toolbar" class="noselect" data-open-title="Hide Toolbar" data-closed-title="Show Toolbar">
+        <i title="Bold" class="svg-icon svg-bold styling-icon" data-modifier="**"></i>
+        <i title="Italic" class="svg-icon svg-italic styling-icon" data-modifier="*"></i>
+        <i title="Strikethrough" class="svg-icon svg-strikethrough styling-icon" data-modifier="~~"></i>
+        <i title="Insert" class="svg-icon svg-underline styling-icon" data-modifier="++"></i>
+        <i title="Mark" class="svg-icon svg-pencil styling-icon" data-modifier="=="></i>
+        <i class="dividor"></i>
+        <i title="Heading 1" class="svg-icon svg-heading1 heading-icon" data-level="1"></i>
+        <i title="Heading 2" class="svg-icon svg-heading2 heading-icon" data-level="2"></i>
+        <i title="Heading 3" class="svg-icon svg-heading3 heading-icon" data-level="3"></i>
+        <i title="Heading 4" class="svg-icon svg-heading4 heading-icon" data-level="4"></i>
+        <i title="Heading 5" class="svg-icon svg-heading5 heading-icon" data-level="5"></i>
+        <i title="Heading 6" class="svg-icon svg-heading6 heading-icon" data-level="6"></i>
+        <i class="dividor"></i>
+        <i title="Horizontal rule" class="svg-icon svg-hr" id="horizontal-rule"></i>
+        <i title="Quote" class="svg-icon svg-quote list-icon" data-prefix="&gt; "></i>
+        <i title="Unordered list" class="svg-icon svg-ul list-icon" data-prefix="- "></i>
+        <i title="Ordered list" class="svg-icon svg-ol list-icon" data-prefix="1. "></i>
+        <i title="Incomplete task list" class="svg-icon svg-unchecked list-icon" data-prefix="- [ ] "></i>
+        <i title="Complete task list" class="svg-icon svg-checked list-icon" data-prefix="- [x] "></i>
+        <i title="Html block" class="svg-icon svg-html" id="html-icon"></i>
+        <i class="dividor"></i>
+        <i title="Link" class="svg-icon svg-link" id="link-icon" data-sample-text="link" data-sample-url="https://fuguijar.top/"></i>
+        <i title="Image" class="svg-icon svg-image" id="image-icon" data-sample-text="image" data-sample-url="https://fuguijar.top/img/favicon.ico"></i>
+        <i title="Code" class="svg-icon svg-code" id="code-icon"></i>
+        <i title="Table" class="svg-icon svg-table" id="table-icon" data-sample="header 1 | header 2
+---|---
+row 1 col 1 | row 1 col 2
+row 2 col 1 | row 2 col 2">
+        </i>
+        <i class="dividor"></i>
+        <i title="Mathematical formula" class="svg-icon svg-formula" id="math-icon" data-sample="E = mc^2"></i>
+        <i title="Flowchart" class="svg-icon svg-flow mermaid-icon" data-sample="graph LR
+A--&gt;B">
+        </i>
+        <i title="Sequence diagram" class="svg-icon svg-seq mermaid-icon" data-sample="sequenceDiagram
+A-&gt;&gt;B: How are you?
+B-&gt;&gt;A: Great!">
+        </i>
+        <i title="Gantt diagram" class="svg-icon svg-gantt mermaid-icon" data-sample="gantt
+dateFormat YYYY-MM-DD
+section S1
+T1: 2014-01-01, 9d
+section S2
+T2: 2014-01-11, 9d
+section S3
+T3: 2014-01-02, 9d">
+        </i>
+      </span>
+      <span class="tb">
+        <i title="Commit" class="ic" id="add" style="width: 28px;height: 28px;"></i>
+        <i title="Save Local" class="ic" id="save" style="background-position: 0px 1.8px;"></i>
+      </span>
+    </div>
+    <div class="ui-layout-toggler" id="north-toggler"></div>
+    <div class="ui-layout-south">
+      <div class="ui-layout-center">
+        <div id="editor" class=" ace_editor ace-tomorrow-night-eighties ace_dark ace_focus" style="line-height: 1.4; font-size: 14px;"><textarea class="ace_text-input" wrap="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="opacity: 0; height: 19.3333px; width: 7.69729px; left: 45px; top: 0px;"></textarea><div class="ace_gutter"><div class="ace_layer ace_gutter-layer ace_folding-enabled" style="margin-top: 0px; height: 392.667px; width: 41px;"><div class="ace_gutter-cell " style="height: 19.3333px;"></div></div><div class="ace_gutter-active-line" style="top: 0px; height: 19.3333px;"></div></div><div class="ace_scroller" style="left: 41px; right: 0px; bottom: 0px;"><div class="ace_content" style="margin-top: 0px; width: 593px; height: 392.667px; margin-left: 0px;"><div class="ace_layer ace_print-margin-layer"><div class="ace_print-margin" style="left: 619.783px; visibility: hidden;"></div></div><div class="ace_layer ace_marker-layer"><div class="ace_active-line" style="height:19.33333396911621px;top:0px;left:0;right:0;"></div></div><div class="ace_layer ace_text-layer" style="padding: 0px 4px;"><div class="ace_line_group" style="height:19.33333396911621px"><div class="ace_line" style="height:19.33333396911621px"></div></div></div><div class="ace_layer ace_marker-layer"></div><div class="ace_layer ace_cursor-layer"><div class="ace_cursor" style="left: 4px; top: 0px; width: 7.69729px; height: 19.3333px;"></div></div></div></div><div class="ace_scrollbar ace_scrollbar-v" style="display: none; width: 22px; bottom: 0px;"><div class="ace_scrollbar-inner" style="width: 22px; height: 354px;"></div></div><div class="ace_scrollbar ace_scrollbar-h" style="display: none; height: 22px; left: 41px; right: 0px;"><div class="ace_scrollbar-inner" style="height: 22px; width: 593px;"></div></div><div style="height: auto; width: auto; top: 0px; left: 0px; visibility: hidden; position: absolute; white-space: pre; font: inherit; overflow: hidden;"><div style="height: auto; width: auto; top: 0px; left: 0px; visibility: hidden; position: absolute; white-space: pre; font: inherit; overflow: visible;"></div><div style="height: auto; width: auto; top: 0px; left: 0px; visibility: hidden; position: absolute; white-space: pre; font-style: inherit; font-variant: inherit; font-stretch: inherit; font-size: inherit; line-height: inherit; font-family: inherit; overflow: visible;"></div></div></div> <!-- 编辑器 -->
+      </div>
+      <div class="ui-layout-toggler" id="east-toggler"></div>
+      <div class="ui-layout-east">
+        <article class="markdown-body" id="preview" data-open-title="Hide Preview" data-closed-title="Show Preview" style="padding-bottom: 334px;"><div></div></article> <!-- 实时预览 -->
+      </div>
+    </div>
+    <script src="js/vendor.js"></script>
+    <script src="js/index.js"></script>
+    <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script> 
+    <script src="https://cdn.staticfile.org/element-ui/2.15.0/index.min.js"></script>
+    <script src="https://cdn.staticfile.org/axios/0.21.1/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-base64@3.6.0/base64.min.js"></script>
+    <script>
+      let head = `---
+layout:     post                    
+title:      Markdown               
+subtitle:   认识 Markdown          
+date:       2020-01-31            
+author:      FuGuiJar                   
+header-img: img/home-bg-o.jpg   
+catalog: true                      
+tags:                              
+    - Markdown
+---
+
+`;
+        document.getElementById("add").onclick = () => {
+          // 获取
+          let getmd= "http://api.github.com/repos/FuGuiJar/FuGuiJar.GitHub.io/contents/_posts/2020-02-30-搭建我的个人博客.md";
+          axios.get(getmd).then(({ data }) =>{
+            console.log(data);
+            let aa= Base64.decode(data.content);
+            console.log(aa);
+            ace.edit("editor").setValue(aa);
+          });
+          return;
+
+          // 上传
+          let token = "6883ff5f2b1aa27a7e0d0d6ed5710c8960660afc";
+          let uesrname = "FuGuiJar";
+          // # axios 在线编写博客 Test 01
+          let str = head + ace.edit("editor").getValue();
+          let a = Base64.encode(str);
+          axios({
+            method: 'put',
+            url: `https://api.github.com/repos/${uesrname}/FuGuiJar.GitHub.io/contents/_posts/${getNowFormatDate()}-axios02.md`,
+            data: {
+              "message": `${getNowFormatDate()}`,
+              "content": a
+            },
+            headers:{
+              'Content-Type': 'application/json',
+              'Authorization': 'token ' + token
+            }
+          }).then(res => {
+            console.log(res);
+          });
+        }
+        document.getElementById("save").onclick = () => {
+          exportRaw(getNowFormatDate() + '.md',head + ace.edit("editor").getValue())
+        }
+        // 保存本地
+        function fakeClick(obj) {
+          var ev = document.createEvent("MouseEvents");
+          ev.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+          obj.dispatchEvent(ev);
+        }
+        function exportRaw(name, data) {
+          var urlObject = window.URL || window.webkitURL || window;
+          var export_blob = new Blob([data]);
+          var save_link = document.createElementNS("http://www.w3.org/1999/xhtml", "a")
+          save_link.href = urlObject.createObjectURL(export_blob);
+          save_link.download = name;
+          fakeClick(save_link);
+        }
+        // 获得当前日期
+        function getNowFormatDate() {
+          let date = new Date();
+          let seperator1 = "-";
+          let year = date.getFullYear();
+          let month = date.getMonth() + 1;
+          let strDate = date.getDate();
+          if (month >= 1 && month <= 9) {
+              month = "0" + month;
+          }
+          if (strDate >= 0 && strDate <= 9) {
+              strDate = "0" + strDate;
+          }
+          let currentdate = year + seperator1 + month + seperator1 + strDate;
+          return currentdate ;
+        }
+        // 快捷键禁用
+        document.onkeydown = function(event){
+          if (event.ctrlKey && window.event.keyCode==87){	//禁用ctrl + w 功能
+              event.preventDefault();
+              return false;
+          }
+          if (event.ctrlKey && window.event.keyCode==83){	//禁用ctrl + s 功能
+              event.preventDefault();
+              return false;
+          }
+        }
+        // 禁右键
+        document.oncontextmenu = function(){
+          return false;
+        }
+        // Vue
+        new Vue({
+          el:"#app",
+          data() {
+            return {
+              dialogVisible:true
+            }
+          },
+        });
+      </script>
+</body> 
+</html>
