@@ -38,19 +38,23 @@
 <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script> 
 <script src="https://cdn.staticfile.org/element-ui/2.15.0/index.min.js"></script>
 <script src="https://cdn.staticfile.org/axios/0.21.1/axios.min.js"></script>
-<!-- <script src="https://cdn.staticfile.org/jquery/3.5.1/jquery.min.js"></script> -->
-<script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script>
 <script>
     const client_id = 'c19d1c649a03c636da4f';
     const client_secret = '21557b0c2bfe1c9391810289093068161d22b014';
     const authorize_uri = 'https://github.com/login/oauth/authorize';
-    // const redirect_uri = 'http://127.0.0.1:5500/index.html';
+
+    const redirect_uri = 'http://127.0.0.1:5500/index.html';
+    // const redirect_uri = 'https://fuguijar.github.io/BlogT/admin/index.html';
+
     const access_token_uri='https://github.com/login/oauth/access_token';
     const URI_CODE = 'code';
-    const index = 'https://fuguijar.github.io/BlogT/';
-    const redirect_uri = 'https://fuguijar.github.io/BlogT/admin/index.html';
-    // axios.defaults.baseURL = '/api'
-    // Failed to set referrer policy: The value 'https://github.com' is not one of 'always', 'default', 'never', 'origin-when-crossorigin', 'no-referrer', 'no-referrer-when-downgrade', 'origin', 'origin-when-cross-origin', 'same-origin', 'strict-origin', 'strict-origin-when-cross-origin', or 'unsafe-url'. The referrer policy has been left unchanged.
+    const proxy_gettoken = 'https://cors-anywhere.herokuapp.com/';
+    const actoken = 'access_token';
+
+    const index = 'http://127.0.0.1:5500/home';
+    // const index = 'https://fuguijar.github.io/BlogT/';
+
+
     new Vue({
         el:"#app",
         data() {
@@ -58,17 +62,14 @@
                 load:false
             }
         },
-        created() {
-            this.jsonpm();
-        },
         mounted(){
+            this.checklogin();
             this.redirect();
         },
         methods: {
             login:function(){
                 window.location=`${authorize_uri}?client_id=${client_id}&redirect_uri=${redirect_uri}`;
             },
-            // 获取url参数
             getUrlKey(name) {
                 return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ""])[1].replace(/\+/g, '%20')) || null
             },
@@ -77,84 +78,22 @@
                 if(code != null){
                     this.load = true;
                     let access_token = `${access_token_uri}?client_id=${client_id}&client_secret=${client_secret}&code=${code}`;   
-                    console.log(access_token);
-                    
-                    // $.ajax({
-                    //     url:access_token,
-                    //     type:'Get',
-                    //     headers: {
-                    //         Accept: "application/json; charset=utf-8",
-                    //         'content-type':'application/json;charset=utf-8'
-                    //     },
-                    //     crossDomain:true,
-                    //     dataType:'jsonp',
-                    //     jsonp:"cc",
-                    //     contentType:"application/json;charset=utf-8",
-                    //     complete: function(a,b){
-                    //         console.log(a);
-                    //         console.log(b);
-                    //     },
-                    //     success: function(res){
-                    //         console.log(res);
-                    //     },
-                    //     error:function(e){console.log(e);}
-                    // });
-                    // return; 
-
-                    // axios.jsonp(access_token,null)  
-                    // .then(res => console.log(res))        
-                    // .catch(err => console.log(err))
-
-                    // jsonpPakeage({
-                    //     url:access_token,
-                    //     parames:"",
-                    //     success:function(res){
-                    //         console.log(res)
-                    //     }
-                    // })
-                    
-                // this.$http.jsonp(access_token, {
-                //         params: {
-                //         },
-                //         jsonp: 'cb'//jsonp默认是callback,百度缩写成了cb，所以需要指定下                     }
-                //         }).then(res => {
-                //         if (res) {
-                //                 console.log(res);
-                //             } else {
-                //                 this.result = [];
-                //             }
-                //         });
-                //     return;
-                //     $.ajax({
-                //         type:"get",
-                //         url: access_token,
-                //         dataType:"jsonp"
-                //     }).then(data =>{
-                //         document.write(data);
-                //     }).catch(a =>{
-                //         console.log(11);
-                //         console.log(a);
-                //     });
-
-
-                    // return;
                     axios({
                         method: 'post',
-                        url: access_token,
+                        url: proxy_gettoken + access_token,
                         headers:{
-                            'Accept': 'application/json',
+                            'Accept': 'application/json'
                         }   
-                    }).then(res => {
-                        console.log(res);
-                    });
-                    return;
-                    axios.post(access_token).then(({ access_token }) => {
-                        console.log(access_token);
-                        if(access_token != null){
-                            localStorage.setItem("access_token",access_token);
-                            this.$message.success("登录成功"); 
+                    }).then(({ data }) => {
+                        console.log(data);
+                        if(data.access_token != null){
+                            localStorage.setItem(actoken,data.access_token);
+                            this.$message.success("登录成功，正在为您跳转");
+                            setTimeout(()=>{
+                            window.location = index;
+                        },1000);
                         }else{
-                            this.$message.error('登录失败');
+                            this.$message.error('登录失败');    
                         }
                     }).catch(e =>{
                         this.$message.error('登录失败');
@@ -162,76 +101,37 @@
                     });
                 }
             },
-            jsonpm:function(){
-                axios.jsonp = (url,data)=>{
-                if(!url)
-                    throw new Error('url is necessary')
-                const callback = 'CALLBACK' + Math.random().toString().substr(9,18)
-                const JSONP = document.createElement('script')
-                    JSONP.setAttribute('type','text/javascript')
-                const headEle = document.getElementsByTagName('head')[0]
-                let ret = '';
-                if(data){
-                    if(typeof data === 'string')
-                        ret = '&' + data;
-                    else if(typeof data === 'object') { 
-                        for(let key in data)
-                            ret += '&' + key + '=' + encodeURIComponent(data[key]);
-                    }
-                    ret += '&_time=' + Date.now();
+            checklogin: function(){
+                this.load = true;
+                let token = localStorage.getItem(actoken);
+                if(token == null){
+                    this.load = false;
+                    return;
                 }
-                JSONP.src = `${url}?callback=${callback}${ret}`;
-                return new Promise( (resolve,reject) => {
-                    window[callback] = r => {
-                        resolve(r)
-                        headEle.removeChild(JSONP)
-                        delete window[callback]
+                axios({
+                    method: 'get',
+                    url: 'https://api.github.com/user',
+                    headers:{
+                        'Authorization': 'token ' + token
                     }
-                    headEle.appendChild(JSONP)
-                })
+                }).then(res => {
+                    if(res.status === 200){
+                        this.$message.success("登录成功，正在为您跳转");
+                        setTimeout(()=>{
+                            window.location = index;
+                        },1000);
+                    }else{
+                        this.load = false;
+                        localStorage.removeItem(actoken);
+                        return;
+                    }
+                }).catch(e =>{
+                        this.$message.error('错误');
+                        localStorage.removeItem(actoken);
+                        console.log(e);
+                }); 
             }
-            }
-        },
+        }
     });
-     //5、jsonp封装
-     function jsonpPakeage(obj) {
-        //写入url地址中的函数名称，动态创建
-        var callbackName = "fn"+Math.random().toString().split("\.")[1];
-        //创建一个script标签
-        var scriptObj = document.createElement("script");
-        scriptObj.setAttribute('type','text/javascript')
-
-
-        obj.parames = obj.parames || '';
-        if (typeof obj.parames == 'object') {
-            var arr = new Array();
-            for (var key in obj.parames) {
-                arr.push(key + '=' + obj.parames[key])
-            }
-            obj.parames = arr.join('&');
-        }
-        //设置标签的请求路径
-        //像这样：http://localhost:3000/api?callback=fn153498520409635392&id=1
-        scriptObj.src = obj.url + '?' + 'callback=' + callbackName + '&' + obj.parames;
-        //将创建好的带请求的script标签添加到html的body中
-        document.getElementsByTagName('head')[0].appendChild(scriptObj);
-
-        //这里必须这样写window[callbackName];
-        //如果写window.callbackName会报错没有定义
-        //var one = true;
-        window[callbackName] = function (res) {
-        console.log(res);
-        console.log(scriptObj);
-
-            //if(one){
-                obj.success(res);
-                //删除的时候可以这样写
-                //由于请求一次会创建一个script标签和一个函数，所以每次获取到结果后就删除
-                delete window.callbackName;
-                document.getElementsByTagName('head')[0].removeChild(scriptObj);
-                // one = false
-            //}
-        }
-    }
 </script>
 </html>
