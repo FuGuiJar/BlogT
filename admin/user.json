@@ -3,7 +3,7 @@
     "repository":"blogT",
     "client_id" : "c19d1c649a03c636da4f",
     "client_secret" : "21557b0c2bfe1c9391810289093068161d22b014",
-    "token" : "YzBkMTViNTY2ZGUwZDcyNDI4OTU3MzJmMjI5NGUyNmJlNmU2MmRiNCA=",
+    "token" : "6883ff5f2b1aa27a7e0d0d6ed5710c8960660afc",
     "redirect_uri" : "http://127.0.0.1:5500/index.html",
     "proxy_gettoken" : "https://cors-anywhere.herokuapp.com/",
     "index" : "http://127.0.0.1:5500/home"

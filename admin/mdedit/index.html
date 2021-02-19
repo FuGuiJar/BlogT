@@ -137,7 +137,6 @@ catalog: true
 tags:                              
     - Markdown
 ---
-
 `;
 
     const login = 'http://127.0.0.1:5500';
@@ -153,7 +152,7 @@ tags:
             ace.edit("editor").setValue(aa);
           });
           return;
-
+          ace.edit("editor").session.doc.$lines;
           // 上传
           let token = "6883ff5f2b1aa27a7e0d0d6ed5710c8960660afc";
           let uesrname = "FuGuiJar";
@@ -238,7 +237,7 @@ tags:
             checklogin: function(){
                 let token = localStorage.getItem(actoken);
                 if(token == null){
-                    this.$message.success("请登录");
+                    this.$message.warning("请登录");
                         setTimeout(()=>{
                             window.location = login;
                     },800);
@@ -251,14 +250,13 @@ tags:
                     }
                 }).then(res => {
                     if(res.status !== 200){
-                        this.$message.success("请登录");
+                        this.$message.warning("请登录");
                         localStorage.removeItem(actoken);
                         setTimeout(()=>{
                             window.location = login;
                         },800);
                     }else{
                         this.load = false;
-                        this.$message.success("欢迎您 " + res.data.login);
                     }
                 }).catch(e =>{
                         this.$message.error('错误');

@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!-- <meta name="referrer" content="strict-origin-when-cross-origin"> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="https://cdn.staticfile.org/element-ui/2.15.0/theme-chalk/index.min.css"/>
@@ -28,6 +27,46 @@
     </head>
 <body>
     <div id="app">
+        <el-dialog
+        title="初始化配置"
+        width="50%"
+        :visible.sync="dialogVisible"
+        :before-close="handleClose">
+        <!-- label-width="150px" -->
+        <el-form ref="config" :model="config">
+            <el-form-item label="GitHubName">
+              <el-input v-model="config.name"></el-input>
+            </el-form-item>
+            <el-form-item label="repository">
+              <el-select v-model="config.repository" placeholder="请选择仓库">
+                <el-option v-for="(item, index) in repos" :key="index" :label="item.name" :value="item.name"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="client_id">
+                <el-input v-model="config.client_id"></el-input>
+            </el-form-item>
+            <el-form-item label="client_secret">
+                <el-input v-model="config.client_secret"></el-input>
+            </el-form-item>
+            <el-form-item label="token">
+                <el-input v-model="config.token"></el-input>
+            </el-form-item>
+            <el-form-item label="redirect_uri">
+                <el-input v-model="config.redirect_uri"></el-input>
+            </el-form-item>
+            <el-form-item label="index">
+                <el-input v-model="config.index"></el-input>
+            </el-form-item>
+            <el-form-item label="proxy_gettoken(选填)">
+                <el-input v-model="config.proxy_gettoken"></el-input>
+            </el-form-item>
+          </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="handleClose()">取 消</el-button>
+            <el-button type="primary" @click="submitConfig()">确 定</el-button>
+        </span>
+        </el-dialog>
+
         <div class="main" v-loading="load">
             <h1>Login</h1>
             <br>
@@ -38,46 +77,129 @@
 <script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script> 
 <script src="https://cdn.staticfile.org/element-ui/2.15.0/index.min.js"></script>
 <script src="https://cdn.staticfile.org/axios/0.21.1/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-base64@3.6.0/base64.min.js"></script>
 <script>
-    const client_id = 'c19d1c649a03c636da4f';
-    const client_secret = '21557b0c2bfe1c9391810289093068161d22b014';
+    let client_id;
+    let client_secret;
+    let index;
+    let redirect_uri;
+    let proxy_gettoken = "https://cors-anywhere.herokuapp.com/";
+
     const authorize_uri = 'https://github.com/login/oauth/authorize';
-
-    const redirect_uri = 'http://127.0.0.1:5500/index.html';
-    // const redirect_uri = 'https://fuguijar.github.io/BlogT/admin/index.html';
-
     const access_token_uri='https://github.com/login/oauth/access_token';
     const URI_CODE = 'code';
-    const proxy_gettoken = 'https://cors-anywhere.herokuapp.com/';
     const actoken = 'access_token';
-
-    const index = 'http://127.0.0.1:5500/home';
-    // const index = 'https://fuguijar.github.io/BlogT/';
-
-
+    
     new Vue({
         el:"#app",
         data() {
             return {    
-                load:false
+                load:false,
+                dialogVisible:false,
+                config:{name:'',proxy_gettoken:''},
+                repos:[]
             }
         },
-        mounted(){
+        created() {
+            this.initConfig();
             this.checklogin();
+        },
+        mounted(){
             this.redirect();
         },
+        watch:{
+            'config.name':{
+                handler: function(newQuestion, oldQuestion) {
+                    this.selectRepos(newQuestion);
+                },
+            }
+        },
         methods: {
+            initConfig(){
+                axios.get('/config.json').then(({ data }) =>{
+                    if(data.proxy_gettoken === '' || data.proxy_gettoken === null){
+                        data.proxy_gettoken = proxy_gettoken;
+                    }
+                    sessionStorage.setItem('config',JSON.stringify(data));
+                    client_id = data.client_id;
+                    client_secret = data.client_secret;
+                    index = data.client_secret;
+                    redirect_uri = data.redirect_uri;
+                    if(data.proxy_gettoken !== '' || data.proxy_gettoken !== null){
+                        proxy_gettoken = data.proxy_gettoken;
+                    }
+                }).catch(e => {
+                    this.dialogVisible = true;
+                });
+            },
+            submitConfig(){
+                let tt = Base64.encode(this.config.token);
+                if(this.config.proxy_gettoken !== '' && this.config.proxy_gettoken !== null){
+                        proxy_gettoken = this.config.proxy_gettoken;
+                }
+                let str = `{
+    "name":"${this.config.name}",
+    "repository":"${this.config.repository}",
+    "client_id" : "${this.config.client_id}",
+    "client_secret" : "${this.config.client_secret}",
+    "token" : "${tt}",
+    "redirect_uri" : "${this.config.redirect_uri}",
+    "proxy_gettoken" : "${proxy_gettoken}",
+    "index" : "${this.config.index}"
+}
+`
+                let token = this.config.token;
+                let uesrname = this.config.name;
+                let repo = this.config.repository;
+                let content = Base64.encode(str);
+
+                axios({
+                    method: 'put',
+                    url: `https://api.github.com/repos/${uesrname}/${repo}/contents/admin/config.json`,
+                    data: {
+                        "message": '0',
+                        "content": content
+                    },
+                    headers:{
+                        'Content-Type': 'application/json',
+                        'Authorization': 'token ' + token
+                    }
+                }).then(res => {
+                    this.$message.success("初始化成功");
+                }).catch(e =>{
+                    this.$message.error('错误');
+                });
+                this.handleClose();
+            },
+            selectRepos(newQuestion){
+                axios.get(`https://api.github.com/users/${newQuestion}/repos`).then(res =>{
+                    if(res === null || res === []){
+                        this.$message.warning("请创建一个仓库！");
+                        return;
+                    }
+                    this.repos = res.data;
+                }).catch(e => {
+                    this.$message.warning("请输入有效账户！");
+                });
+            },
+            handleClose(){
+                this.dialogVisible = false;
+            },
             login:function(){
+                if(sessionStorage.getItem('config') == null){
+                    this.initConfig();
+                }
                 window.location=`${authorize_uri}?client_id=${client_id}&redirect_uri=${redirect_uri}`;
             },
             getUrlKey(name) {
                 return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ""])[1].replace(/\+/g, '%20')) || null
             },
             redirect:function(){
+                let session = JSON.parse(sessionStorage.getItem('config'));
                 let code = this.getUrlKey(URI_CODE);
                 if(code != null){
                     this.load = true;
-                    let access_token = `${access_token_uri}?client_id=${client_id}&client_secret=${client_secret}&code=${code}`;   
+                    let access_token = `${access_token_uri}?client_id=${session.client_id}&client_secret=${session.client_secret}&code=${code}`;   
                     axios({
                         method: 'post',
                         url: proxy_gettoken + access_token,
@@ -85,12 +207,11 @@
                             'Accept': 'application/json'
                         }   
                     }).then(({ data }) => {
-                        console.log(data);
                         if(data.access_token != null){
                             localStorage.setItem(actoken,data.access_token);
                             this.$message.success("登录成功，正在为您跳转");
-                            setTimeout(()=>{
-                            window.location = index;
+                            setTimeout(() => {
+                            window.location = session.index;
                         },1000);
                         }else{
                             this.$message.error('登录失败');    
@@ -102,6 +223,7 @@
                 }
             },
             checklogin: function(){
+                let session = JSON.parse(sessionStorage.getItem('config'));
                 this.load = true;
                 let token = localStorage.getItem(actoken);
                 if(token == null){
@@ -118,7 +240,7 @@
                     if(res.status === 200){
                         this.$message.success("登录成功，正在为您跳转");
                         setTimeout(()=>{
-                            window.location = index;
+                            window.location = session.index;
                         },1000);
                     }else{
                         this.load = false;

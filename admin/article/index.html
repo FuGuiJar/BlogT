@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/element-ui/2.15.0/theme-chalk/index.min.css"/>
+    <title>Document</title>
+    <style>
+    </style>
+</head>
+<body>
+    <div id="app">
+        <el-table
+        ref="articleTable"
+        :data="tableData"
+        tooltip-effect="dark"
+        stripe
+        @selection-change="rowSelection"
+        >
+        <el-table-column
+        type="selection"
+        width="55">
+        </el-table-column>
+        <el-table-column
+        prop="name"
+        label="名字"
+       >
+        </el-table-column>
+        <el-table-column
+          prop="size"
+          label="大小"
+         >
+         <template slot-scope="scope">
+            {{ scope.row.size }} B
+         </template>
+        </el-table-column>
+        <el-table-column
+        prop="html_url"
+        label="链接"
+        >
+        <template slot-scope="scope">
+            <el-link :href="scope.row.html_url" class="el-icon-top-right" target="_blank"></el-link>
+        </template>
+        </el-table-column>
+        <el-table-column
+        prop="download_url"
+        label="下载"
+        >
+        <template slot-scope="scope">
+            <el-link target="_blank" :href="scope.row.download_url" class="el-icon-download"></el-link>
+        </template>
+         </el-table-column>
+        <el-table-column>
+        <template slot-scope="scope">
+          <el-button  type="text" size="small">查看</el-button>
+          <el-button  type="text" size="small">删除</el-button>
+          <el-button @click="showArticle(scope.row)" type="text" size="small">编辑</el-button>
+        </template>
+      </el-table-column>
+      </el-table>
+    </div>
+</body>
+<script src="https://cdn.staticfile.org/vue/2.6.12/vue.min.js"></script> 
+<script src="https://cdn.staticfile.org/element-ui/2.15.0/index.min.js"></script>
+<script src="https://cdn.staticfile.org/axios/0.21.1/axios.min.js"></script>
+<script>
+    new Vue({
+        el:'#app',
+        data() {
+            return {
+                tableData:[]
+            }
+        },
+        created() {
+            this.initData();
+        },
+        mounted() { 
+        },
+        methods: {
+            initData(){
+                axios.get("http://api.github.com/repos/FuGuiJar/BlogT/contents/_posts").then(({ data }) =>{
+                    this.tableData = data;
+                });
+            },
+            showArticle(row){
+                // console.log(this.$refs.articleTable);
+                console.log(row);
+            },
+            rowSelection(val) {
+                console.log(val);
+            }
+        },
+    });
+</script>
+</html>
